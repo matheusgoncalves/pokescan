@@ -5,7 +5,9 @@
 <template>
   <div class="container w-full">
     <header class="d-flex justify-content-center py-5">
-      <AppLogotype style="max-width: 460px;"/>
+      <router-link to="/">
+        <AppLogotype style="max-width: 460px;"/>
+      </router-link>
     </header>
 
     <main class="my-0">
