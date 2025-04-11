@@ -43,7 +43,14 @@ export interface Species {
 // Tipagem para as sprites de pokémons
 export interface Sprites {
   front_default: string;
-  [key: string]: string | null | undefined;
+  other?: {
+    ['official-artwork']?: {
+      front_default: string;
+    };
+    ['showdown']?: {
+      front_default: string;
+    };
+  }
 }
 
 // Tipagem dos dados consumidos de pokémons
