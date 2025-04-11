@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { ref, onMounted, watch } from 'vue';
-  import { getPokemons, searchPokemon } from '@/api/pokeapi';
+  import { ref, onMounted, watch, computed } from 'vue';
+  import { getPokemons, searchPokemon, getFilteredPokemons, fetchPokemonTypes, fetchPokemonSpecies } from '@/api/pokeapi';
   import type { Pokemon } from '@/api/pokeapi';
   import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -9,8 +9,60 @@
   const limit = 20;
   const loading = ref(false);
   const finished = ref(false);
+
+  // Variáveis de busca
   const searchQuery = ref('');
   const hasSearched = ref(false);
+
+  // Variáveis de filtro
+  const showFilter = ref(false);
+  const selectedSpecies = ref<string | null>(null);
+  const selectedType = ref<string | null>(null);
+  const availableTypes = ref<string[]>([]);
+  const availableSpecies = ref<string[]>([]);
+  const isSpeciesDisabled = computed(() => selectedType.value !== null);
+  const isTypesDisabled = computed(() => selectedSpecies.value !== null);
+
+  // Métodos de filtro
+  const toggleFilter = () => {
+    showFilter.value = !showFilter.value;
+  };
+
+  const clearFilter = (filter: 'species' | 'type') => {
+    if (filter === 'species') selectedSpecies.value = null;
+    if (filter === 'type') selectedType.value = null;
+  };
+
+  const clearAllFilters = () => {
+    selectedSpecies.value = null;
+    selectedType.value = null;
+  };
+
+  const fetchAvailableFilters = async () => {
+    availableTypes.value = await fetchPokemonTypes();
+    availableSpecies.value = await fetchPokemonSpecies();
+  };
+
+  // Watcher para gerenciar a exibição de acordo com o filtro
+  watch([selectedType, selectedSpecies], async () => {
+    offset.value = 0;
+    finished.value = false;
+    pokemons.value = [];
+
+    if (selectedType.value || selectedSpecies.value) {
+      pokemons.value = await getFilteredPokemons({
+        type: selectedType.value,
+        species: selectedSpecies.value,
+        offset: offset.value,
+        limit: limit,
+      });
+
+      offset.value += limit;
+      hasSearched.value = true;
+    } else {
+      await loadMorePokemons(); // Volta para o modo padrão (sem filtros)
+    }
+  });
 
   // Função para gerenciar o carregamento e exibição dos pokémons
   const loadMorePokemons = async () => {
@@ -62,10 +114,15 @@
     } else {
       pokemons.value = [];
     }
+
+    clearAllFilters();
   }
 
   onMounted(async () => {
-    await loadMorePokemons();
+    await Promise.all([
+      loadMorePokemons(),
+      fetchAvailableFilters(),
+    ]);
     window.addEventListener('scroll', handleScroll);
   })
 </script>
@@ -73,6 +130,7 @@
 <template>
   <div class="container my-4">
     <div class="row justify-content-center">
+      <!-- Barra de pesquisa -->
       <div class="d-flex flex-column gap-1 col-12 col-md-8">
         <div class="d-inline-flex align-items-center gap-3 text-center p-0">
           <input
@@ -96,10 +154,100 @@
         </span>
       </div>
 
+      <!-- Filtro -->
+      <div class="d-flex justify-content-end gap-2 col-12 col-md-4">
+        <div class="d-flex flex-column gap-1">
+          <div class="d-flex flex-wrap gap-2">
+            <div
+              v-if="selectedSpecies"
+              class="input-hover text-capitalize fw-normal badge bg-dark-subtle d-flex align-items-center gap-1 px-2 py-0 rounded-pill"
+              style="height: 28px; font-size: 14px;"
+            >
+              <i class="bi bi-x-octagon" role="button" @click="clearFilter('species')"></i>
+              {{ selectedSpecies }}
+            </div>
 
-      <div class="col-12 col-md-4">
-        <div class="d-flex justify-content-end align-items-center">
-          O filtro será colocado aqui
+            <div
+              v-if="selectedType"
+              class="input-hover text-capitalize fw-normal badge bg-dark-subtle d-flex align-items-center gap-1 px-2 py-0 rounded-pill"
+              style="height: 28px; font-size: 14px;"
+            >
+              <i class="bi bi-x-octagon" role="button" @click="clearFilter('type')"></i>
+              {{ selectedType }}
+            </div>
+          </div>
+
+<!--          <div-->
+<!--            v-if="selectedSpecies || selectedType"-->
+<!--            class="d-flex gap-2 text-danger"-->
+<!--            role="button"-->
+<!--            @click="clearAllFilters"-->
+<!--          >-->
+<!--            <span-->
+<!--              class="ms-2"-->
+<!--              style="font-size: 14px;"-->
+<!--            >-->
+<!--              <i class="bi bi-x-octagon"></i> Limpar todos os filtros-->
+<!--            </span>-->
+<!--          </div>-->
+        </div>
+
+        <!-- Botão de filtro -->
+        <div class="position-relative">
+          <div class="d-flex align-items-top gap-2">
+            <button
+              @click="toggleFilter"
+              class="btn border-0 p-0"
+              style="width: 28px; height: 28px; line-height: 0;"
+            >
+              <i class="bi bi-filter-square-fill fs-5 p-0"></i>
+            </button>
+          </div>
+
+          <!-- Dropdown suspenso -->
+          <div
+            v-if="showFilter"
+            class="position-absolute bg-white border rounded shadow p-3 mt-2"
+            style="z-index: 10; width: 300px; right: 0;"
+          >
+            <!-- Filtro por espécie -->
+            <div class="mb-3">
+              <label for="species-select" class="form-label">Filtrar por espécie:</label>
+              <select
+                id="species-select"
+                class="form-select"
+                v-model="selectedSpecies"
+                :disabled="isSpeciesDisabled"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Remova o filtro de tipo para filtrar por espécie"
+              >
+                <option :value="null">Selecionar espécie</option>
+                <option v-for="specie in availableSpecies" :key="specie" :value="specie">
+                  {{ specie }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Filtro por tipo -->
+            <div>
+              <label for="type-select" class="form-label">Filtrar por tipo:</label>
+              <select
+                id="type-select"
+                class="form-select"
+                v-model="selectedType"
+                :disabled="isTypesDisabled"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Remova o filtro de espécie para filtrar por tipo"
+              >
+                <option :value="null">Selecionar tipo</option>
+                <option v-for="type in availableTypes" :key="type" :value="type">
+                  {{ type }}
+                </option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -141,4 +289,10 @@
 </template>
 
 <style scoped>
+  .input-hover{
+    transition: color 0.2s ease-out;
+  }
+  .input-hover:hover {
+    color: red;
+  }
 </style>
