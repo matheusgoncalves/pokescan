@@ -187,8 +187,8 @@ export async function getPokemonsBySpecies(species: string): Promise<Pokemon[]> 
 }
 
 interface PokemonFilterOptions {
-  type?: string;
-  species?: string;
+  type?: string | null;
+  species?: string | null;
   offset?: number;
   limit?: number;
 }
