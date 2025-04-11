@@ -14,6 +14,10 @@ const routes = [
     name: 'Pokemon',
     component: PokemonView
   },
+  {
+    path: "/:catchAll(.*)",
+    redirect: "/",
+  },
 ]
 
 const router = createRouter({
