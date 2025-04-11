@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 
 // Tipagem para os ataques dos pokémons
 export interface Ability {
@@ -100,4 +100,27 @@ export async function getPokemons(offset = 0, limit = 20): Promise<Pokemon[]> {
       fetchPokemonDetails(item.url)
     )
   );
+}
+
+// Função para pesquisar um pokémon
+export async function searchPokemon(query: string): Promise<Pokemon | null> {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${query.toLowerCase()}`);
+    const data = response.data;
+
+    return {
+      id: data.id,
+      name: data.name,
+      order: data.order,
+      abilities: data.abilities,
+      forms: data.forms,
+      game_indices: data.game_indices,
+      species: data.species,
+      sprites: data.sprites,
+      types: data.types,
+    };
+  } catch (error) {
+    console.error("Erro! Pokémon não encontrado:", error);
+    return null;
+  }
 }

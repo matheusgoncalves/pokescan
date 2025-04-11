@@ -1,13 +1,16 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
-  import { getPokemons } from '@/api/pokeapi';
+  import { ref, onMounted, watch } from 'vue';
+  import { getPokemons, searchPokemon } from '@/api/pokeapi';
   import type { Pokemon } from '@/api/pokeapi';
+  import 'bootstrap-icons/font/bootstrap-icons.css';
 
   const pokemons = ref<Pokemon[]>([]);
   const offset = ref(0);
   const limit = 20;
   const loading = ref(false);
   const finished = ref(false);
+  const searchQuery = ref('');
+  const hasSearched = ref(false);
 
   // Função para gerenciar o carregamento e exibição dos pokémons
   const loadMorePokemons = async () => {
@@ -41,6 +44,26 @@
     }
   }
 
+  // Função para gerenciar a busca de pokémons
+  async function handleSearch() {
+    hasSearched.value = true;
+
+    if (searchQuery.value.trim() === '') {
+      pokemons.value = [];
+      offset.value = 0;
+      finished.value = false;
+      await loadMorePokemons();
+      return;
+    }
+
+    const result = await searchPokemon(searchQuery.value)
+    if (result) {
+      pokemons.value = [result]
+    } else {
+      pokemons.value = [];
+    }
+  }
+
   onMounted(async () => {
     await loadMorePokemons();
     window.addEventListener('scroll', handleScroll);
@@ -48,6 +71,40 @@
 </script>
 
 <template>
+  <div class="container my-4">
+    <div class="row justify-content-center">
+      <div class="d-flex flex-column gap-1 col-12 col-md-8">
+        <div class="d-inline-flex align-items-center gap-3 text-center p-0">
+          <input
+            v-model="searchQuery"
+            @keyup.enter="handleSearch"
+            type="text"
+            placeholder="Pesquise pelo nome ou número do pokémon"
+            class="form-control border border-3 border-secondary rounded-5 w-full"
+            style="height: 44px; padding-left: 16px;"
+          />
+
+          <div>
+            <button @click="handleSearch" class="border-0 bg-dark-subtle rounded-circle" style="width: 52px; height: 52px;">
+              <i class="bi bi-search fs-4 text-white-50"></i>
+            </button>
+          </div>
+        </div>
+
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-info-circle-fill text-secondary fs-5"></i> Ou, se preferir, filtre os pokémons exibidos clicando no quadrado à direita.
+        </span>
+      </div>
+
+
+      <div class="col-12 col-md-4">
+        <div class="d-flex justify-content-end align-items-center">
+          O filtro será colocado aqui
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="d-flex flex-wrap justify-content-center">
     <div v-for="pokemon in pokemons" :key="pokemon.order" class="d-flex flex-column border border-3 border-solid border-secondary rounded-5 p-3 m-3">
       <div class="d-flex justify-content-center align-items-end p-4 bg-secondary-subtle rounded-5" style="width: 168px; min-width: 168px; max-width: 160px; height: 160px;">
@@ -77,4 +134,11 @@
   <div v-if="finished" class="text-center my-4 text-muted">
     <span>Todos os pokémons foram carregados!</span>
   </div>
+
+  <div v-if="!loading && pokemons.length === 0 && hasSearched">
+    <p class="text-center text-muted my-4">Nenhum pokémon encontrado.</p>
+  </div>
 </template>
+
+<style scoped>
+</style>
