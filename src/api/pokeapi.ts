@@ -42,7 +42,14 @@ export interface Species {
 
 // Tipagem para as sprites de pokémons
 export interface Sprites {
+  back_default: string;
+  back_female: string | null;
+  back_shiny: string;
+  back_shiny_female: string | null;
   front_default: string;
+  front_female: string | null;
+  front_shiny: string;
+  front_shiny_female: string | null;
   other?: {
     ['official-artwork']?: {
       front_default: string;
@@ -73,8 +80,23 @@ async function fetchPokemonList(offset = 0, limit = 20) {
   return response.data.results;
 }
 
-// Função para buscar os dados completos de um pokémon (com base no retorno da fetchPokemonList)
-async function fetchPokemonDetails(url: string): Promise<Pokemon> {
+// Função para buscar os dados completos de um pokémon (aceita url, id ou name)
+export async function fetchPokemonDetails(query: string): Promise<Pokemon> {
+  // Determina se a entrada é uma URL, id (números) ou nome
+  let url: string;
+
+  if (query.startsWith("http")) {
+    // Caso seja uma URL, usa diretamente a URL
+    url = query;
+  } else if (!isNaN(Number(query))) {
+    // Caso seja um id (número)
+    url = `https://pokeapi.co/api/v2/pokemon/${query}`;
+  } else {
+    // Caso seja um nome
+    url = `https://pokeapi.co/api/v2/pokemon/${query.toLowerCase()}`;
+  }
+
+  // Busca os dados na URL determinada
   const res = await axios.get(url);
   const data = res.data;
 
