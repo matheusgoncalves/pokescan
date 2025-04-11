@@ -5,7 +5,7 @@
 <template>
   <div class="container w-full">
     <header class="d-flex justify-content-center py-5">
-      <AppLogotype />
+      <AppLogotype style="max-width: 460px;"/>
     </header>
 
     <main class="my-0">
