@@ -1,39 +1,54 @@
-# pokegauge
+# 🧪 PokeScan
 
-This template should help get you started developing with Vue 3 in Vite.
+> Projeto desenvolvido como parte de um teste técnico para vaga de estágio.
 
-## Recommended IDE Setup
+PokeScan é uma aplicação simples desenvolvida com **Vue 3**, **TypeScript**, **Axios** e **Bootstrap**, que consome a [PokéAPI](https://pokeapi.co/) para exibir uma lista de pokémons com scroll infinito e uma página de detalhamento para cada um deles.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Type Support for `.vue` Imports in TS
+## 🚀 Tecnologias Utilizadas
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- [Vue 3](https://vuejs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Axios](https://axios-http.com/)
+- [Bootstrap 5](https://getbootstrap.com/)
+- [PokéAPI](https://pokeapi.co/)
 
-## Customize configuration
+---
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## ⚙️ Funcionalidades
 
-## Project Setup
+- ✅ Listagem de Pokémons com scroll infinito
+- ✅ Exibição dos principais dados de cada Pokémon:
+  - Nome
+  - ID
+  - Habilidades (`abilities`)
+  - Formas (`forms`)
+  - Tipos (`types`)
+  - Índices de jogo (`game_indices`)
+  - Sprites
+- ✅ Página de detalhes para cada Pokémon
+- ✅ Tipagem correta dos dados com TypeScript
+- ✅ Código limpo e organizado
 
-```sh
+---
+
+## 📦 Instalação
+
+
+## 1. Clone o repositório
+```bash
+git clone https://github.com/matheusgoncalves/pokescan.git
+```
+## 2. Acesse a pasta
+```
+cd pokescan
+```
+## 3. Instale as dependências
+```
 npm install
 ```
-
-### Compile and Hot-Reload for Development
-
-```sh
+## 4. Rode o projeto
+```
 npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
 ```
